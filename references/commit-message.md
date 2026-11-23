@@ -25,7 +25,7 @@ python3 "$skill_dir/hooks/commit-msg" "$message" &&
   git commit --cleanup=strip -F "$message"
 ```
 
-To commit the brief alone, stage additions and updates with `git add -- taskbook.md` or stage deletion with `git rm -- taskbook.md`. Use `git commit --cleanup=strip -F "$message" --only -- taskbook.md` in place of the commit command above. Keep existing repository hooks enabled. The brief and clarifications remain in pushed history. If you find sensitive content, confirm it can be recorded in the target repository before committing it.
+For intake and cleanup, use the exact imported file paths, including Gitea supporting files. For a clarification, use only `taskbook.md`. Stage additions and updates with `git add -- <paths>` or stage deletions with `git rm -- <paths>`. Use `git commit --cleanup=strip -F "$message" --only -- <paths>` to preserve unrelated staging. Keep existing repository hooks enabled. The imported files and clarifications remain in pushed history. If you find sensitive content, confirm it can be recorded in the target repository before committing it.
 
 ## 在自己的仓库启用
 

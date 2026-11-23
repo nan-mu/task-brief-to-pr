@@ -1,6 +1,6 @@
 # PR delivery
 
-Use Magpie GitHub MCP for PR writes, including `create_pull_request`, `update_pull_request`, and `add_issue_comment`. Discover the session's actual Magpie tool names and verify the authenticated identity before the first write. If the required capability is unavailable, the identity lacks permission, or host instructions require another PR write route, report the specific blocker and stop before the PR write. Reuse the local work and prepared PR body when the approved route becomes available.
+Use the local Magpie GitHub MCP for PR writes, including `create_pull_request`, `update_pull_request`, and `add_issue_comment`. Follow the [local Magpie routing](../SKILL.md#local-magpie-routing).
 
 In T3, link the full PR URL with `link_pull_request` immediately after creating, taking over, or pushing to a PR. Reuse the link when the tool creates it automatically.
 
