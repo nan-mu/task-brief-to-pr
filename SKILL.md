@@ -25,14 +25,14 @@ Commit each addition, clarification, and deletion of `taskbook.md` separately fr
 
 ## 3. Implement, clarify, and verify
 
-1. Resolve routine implementation choices yourself. Ask the user about ambiguities, conflicts, or blockers that affect implementation or acceptance. For each reply, append the question and the user's answer under `澄清记录` in `taskbook.md`. Preserve the original brief and earlier answers. Commit each update before resuming implementation. Record any answers received before worktree setup the same way, immediately after the intake commit.
-2. Run the acceptance tests or reproduction commands yourself in the worktree. Inspect the final diff and record the commands you ran and their results. When a plan review, diff review, or final review is needed, follow the [read-only review prompt](references/review-prompt.md) and resolve the findings yourself.
+1. Read the project's terminology source when the brief or repository identifies one. Use the user's and project's established terms. Resolve routine implementation choices yourself. Bring unresolved decisions that change delivery to the user, including changes to a public contract, responsibility between components, or a new long-term dependency. Explain the observed problem and how the options affect delivery. Append the question and answer under `澄清记录` in `taskbook.md`, preserving the original brief and earlier answers. Commit each update before resuming the affected work. Record any answers received before worktree setup immediately after the intake commit.
+2. Verify affected acceptance criteria using the agreed entry points and required repository checks. Reuse existing checks and cite earlier evidence when the relevant behavior and inputs are unchanged. Add a lasting test only for a specific regression the existing checks would miss. Inspect the final diff and record the evidence, commands, and results. When a plan, diff, or final review is needed, follow the [read-only review prompt](references/review-prompt.md).
 3. After implementation passes acceptance, commit the implementation and record the SHA containing the latest brief. Delete `taskbook.md` in its own commit.
 
 ## 4. Publish the PR
 
 Recover the final brief with `git show <brief-sha>:taskbook.md`. Draft the PR body with the goal, actual changes, acceptance results, and relevant limitations. Save the draft outside the tracked files and reuse it on publication retries.
 
-Verify that this round's diff matches its scope and that the PR diff contains no `taskbook.md`. Push the task branch, then follow [PR delivery](references/pr-delivery.md) to create or update the PR. Confirm the PR points to the pushed head and contains the saved body. Give the user the link, a change summary, and the verification you ran.
+Verify that this round's diff matches its scope and that the PR diff contains no `taskbook.md`. Before writing to the PR, receive any review started for this delivery and resolve its applicable findings. Push the task branch, then follow [PR delivery](references/pr-delivery.md) to create or update the PR. Confirm the PR points to the pushed head and contains the saved body. Give the user the link, a change summary, and the verification you ran.
 
 When the user supplies a revision brief for the PR, start a new round at step 1.

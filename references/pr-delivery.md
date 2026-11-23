@@ -1,6 +1,6 @@
 # PR delivery
 
-Use T3's `pull_request_*` tools when available. Otherwise use Magpie GitHub MCP's `create_pull_request`, `pull_request_read`, `add_issue_comment`, and `update_pull_request`. If the required operation or permission is unavailable, identify the specific blocker.
+Use Magpie GitHub MCP for PR writes, including `create_pull_request`, `update_pull_request`, and `add_issue_comment`. Discover the session's actual Magpie tool names and verify the authenticated identity before the first write. If the required capability is unavailable, the identity lacks permission, or host instructions require another PR write route, report the specific blocker and stop before the PR write. Reuse the local work and prepared PR body when the approved route becomes available.
 
 In T3, link the full PR URL with `link_pull_request` immediately after creating, taking over, or pushing to a PR. Reuse the link when the tool creates it automatically.
 
