@@ -1,0 +1,8 @@
+<emoji> <type>(<scope>): <English subject>
+
+<Describe the change and why in English.>
+
+中文总结：<summary>
+
+# Optional, one line per co-author:
+# Co-authored-by: Name <email@example.com>
