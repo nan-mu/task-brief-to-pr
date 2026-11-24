@@ -35,7 +35,7 @@ Commit each intake, clarification, and cleanup separately from implementation ch
 
 ## 3. Implement, clarify, and verify
 
-Before implementing, [load or initialize the project glossary in Gitea](references/gitea-glossary.md). Read any terminology source named in the brief. Use the project's established terms and the user's wording for undocumented concepts.
+Before implementing, [load or initialize the project glossary on its dedicated Gitea branch](references/gitea-glossary.md). Read any terminology source named in the brief. Use the project's established terms and the user's wording for undocumented concepts.
 
 1. Resolve routine implementation choices yourself. Bring unresolved decisions that change delivery to the user, including changes to a public contract, responsibility between components, or a new long-term dependency. Explain the observed problem and how the options affect delivery. Append the question and answer under `澄清记录` in `taskbook.md`, preserving the original brief and earlier answers. Commit each update before resuming the affected work. Record any answers received before worktree setup immediately after the intake commit.
 2. Verify affected acceptance criteria using the agreed entry points and required repository checks. Reuse existing checks and cite earlier evidence when the relevant behavior and inputs are unchanged. Add a lasting test only for a specific regression the existing checks would miss. Inspect the final diff and record the evidence, commands, and results. When a plan, diff, or final review is needed, follow the [read-only review prompt](references/review-prompt.md).
