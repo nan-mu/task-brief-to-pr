@@ -9,7 +9,7 @@ Run this workflow when the user explicitly invokes the skill and asks you to imp
 
 ## Local Magpie routing
 
-On this machine, route Magpie calls exclusively through Codex's local `magpie` provider (`mcp__magpie__…`). The ChatGPT account's Cloudflare-routed connector appears under `mcp__codex_apps__magpie_…`. If a required local tool is unavailable, report the missing capability.
+On this machine, route Magpie calls exclusively through Codex's local `magpie` provider (`mcp__magpie__…`). Perform every Gitea read and write through its Gitea MCP tools (`mcp__magpie__gitea__…`). If a required local tool is unavailable, report the missing capability.
 
 The local GitHub MCP uses a GitHub App installation token. Use the GitHub owner and repository from the Git remote or current PR metadata and call the needed operation directly. Skip `get_me` for this token.
 
@@ -17,7 +17,7 @@ For Matt Pocock's skills, the issue tracker is GitHub Issues in the implementati
 
 ## 1. Read the brief and enter the worktree
 
-When resuming an existing round, check for the commits in step 2 before retrieving the brief again.
+When resuming an existing round, check for a [pending experiment report](references/experiment-results.md#stop-and-report) in the task worktree before resuming delivery. Then check for the commits in step 2 before retrieving the brief again.
 
 1. Read the brief from the source the user supplies, including pasted text or a Markdown file. Resolve local paths to absolute paths and open supporting materials as needed. For ZIP and TAR archives, use Python 3 with [read-taskbook.py](scripts/read-taskbook.py) to read the root `taskbook.md`. For other archives, use an available reader to read the single regular file at that location. For an explicit Gitea source, or an existing PR with no supplied brief, follow [Gitea intake](references/gitea-intake.md). Ask for a usable source when the entry is missing, unreadable, or ambiguous.
 2. Resolve the implementation repository, acceptance criteria, starting ref, and PR base from the brief and current project. Use an existing PR when the brief or task context identifies it independently of the Gitea source. Verify its number, head repository, head branch, and base, then use its head. Otherwise use the new PR workflow. Honor an implementation branch the user names and ask when branch ownership is unclear. For a new branch, use the requested name or choose an unused one. Start independent work from the latest remote default branch, or the local default if there is no remote. Start dependent work from the ref containing the dependency and use the PR base specified by the brief.
@@ -29,21 +29,23 @@ Read [the commit format and commands](references/commit-message.md) before commi
 
 On resume, use the round's commits to identify completed steps. If the deletion commit exists, continue at step 4. If the intake commit exists and the brief is still present, reuse it and resume the unfinished work in step 3.
 
-For a new round, check the destinations for existing files and symlinked parent directories. Preserve existing work and resolve any collision before copying. Copy the original brief to the worktree root as `taskbook.md`. For Gitea intake, also copy the downloaded supporting files at their relative paths. Commit only the imported paths and record the intake commit SHA. Start implementation after this commit succeeds.
+For a new round, check the destinations for existing files and symlinked parent directories. Preserve existing work and resolve any collision before copying. Copy the original brief to the worktree root as `taskbook.md`. For Gitea intake, also copy the downloaded supporting files at their relative paths and add a `Taskbook-Source: <owner>/<repo> <branch-or-ref> <pinned-commit-sha>` trailer to the intake commit. Use the source branch when known. Commit only the imported paths and record the intake commit SHA. Start implementation after this commit succeeds.
 
 Commit each intake, clarification, and cleanup separately from implementation changes. Preserve unrelated staged changes.
 
 ## 3. Implement, clarify, and verify
 
-Before implementing, [load or initialize the project glossary on its dedicated Gitea branch](references/gitea-glossary.md). Read any terminology source named in the brief. Use the project's established terms and the user's wording for undocumented concepts.
+Before implementing, [extract and match existing experiment results](references/experiment-results.md) if the brief includes test records or the worktree has audit results relevant to the task. If a downstream failure gives concrete reason to doubt a reused result, immediately follow [Stop and report](references/experiment-results.md#stop-and-report) and end the round after reporting.
+
+Before implementing, also [load or initialize the project glossary on its dedicated Gitea branch](references/gitea-glossary.md). Read any terminology source named in the brief. Use the project's established terms and the user's wording for undocumented concepts.
 
 1. Resolve routine implementation choices yourself. Bring unresolved decisions that change delivery to the user, including changes to a public contract, responsibility between components, or a new long-term dependency. Explain the observed problem and how the options affect delivery. Append the question and answer under `澄清记录` in `taskbook.md`, preserving the original brief and earlier answers. Commit each update before resuming the affected work. Record any answers received before worktree setup immediately after the intake commit.
-2. Verify affected acceptance criteria using the agreed entry points and required repository checks. Reuse existing checks and cite earlier evidence when the relevant behavior and inputs are unchanged. Add a lasting test only for a specific regression the existing checks would miss. Inspect the final diff and record the evidence, commands, and results. When a plan, diff, or final review is needed, follow the [read-only review prompt](references/review-prompt.md).
-3. After implementation passes acceptance, commit the implementation and record the SHA containing the latest brief. Remove the imported paths in a separate commit. Use the intake commit to recover the path list on resume.
+2. Verify the acceptance criteria still open using the agreed entry points and required repository checks. Add a lasting test only for a specific regression the existing checks would miss. Inspect the final diff and record the evidence, commands, and results. When a plan, diff, or final review is needed, follow the [read-only review prompt](references/review-prompt.md).
+3. After implementation passes acceptance, commit the implementation and its audit results. Record the SHA containing the latest brief. Remove the imported paths in a separate commit and retain the audit results. Use the intake commit to recover the path list on resume.
 
 ## 4. Publish the PR
 
-Recover the final brief with `git show <brief-sha>:taskbook.md`. Draft the PR body with the goal, actual changes, acceptance results, and relevant limitations. Save the draft outside the tracked files and reuse it on publication retries.
+Recover the final brief with `git show <brief-sha>:taskbook.md`. Draft the PR body with the goal, actual changes, acceptance results, and relevant limitations. Cite any reused evidence and identify the checks actually run this round. Save the draft outside the tracked files and reuse it on publication retries.
 
 Verify that this round's diff matches its scope and that the PR diff is free of the imported paths. Before writing to the PR, receive any review started for this delivery and resolve its applicable findings. Push the task branch, then follow [PR delivery](references/pr-delivery.md) to create or update the PR. Confirm the PR points to the pushed head and contains the saved body. Give the user the link, a change summary, and the verification you ran.
 
