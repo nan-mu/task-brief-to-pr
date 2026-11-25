@@ -7,6 +7,8 @@ description: 按粘贴、文件或 Gitea 上的任务书在独立 Git worktree �
 
 Run this workflow when the user explicitly invokes the skill and asks you to implement a task brief. The invocation `task-brief-to-pr <gitea-owner>/<repo>:<ref>` is an implementation request with a [Gitea source](references/gitea-intake.md). Finish with a PR ready for the user to review.
 
+An explicit invocation authorizes the workflow for the selected task, including [Magpie access to the full review evidence](references/review-prompt.md#default-review-authorization) and PR delivery. Apply any limits the user gives for that run.
+
 ## Local Magpie routing
 
 On this machine, route Magpie calls exclusively through Codex's local `magpie` provider (`mcp__magpie__…`). Perform every Gitea read and write through its Gitea MCP tools (`mcp__magpie__gitea__…`). If a required local tool is unavailable, report the missing capability.
