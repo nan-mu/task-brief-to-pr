@@ -1,4 +1,4 @@
-# T3 read-only review
+# T3 read-only review and independent validation
 
 ## Default review authorization
 
@@ -12,60 +12,81 @@ Use the configured Magpie routes with the user's privacy protection. Provide rev
 - Use DeepSeek Flash (`magpie/nas/group/deepseek-flash`) for `plan` and `diff`. Use Qwen4 (`magpie/group/qwen4`) for `final` only when a final review is needed.
 - A Pi instance configured for reviews can restrict its built-in tools to the native file reader with the launch arguments `--tools` and `read`. T3 applies Pi's permission mode to the reviewer's tool calls.
 
+Use the existing diff or final review to execute the independent validation. A plan review assesses the proposal. When the diff review covers the implementation and its applied test evidence, use that result for delivery.
+
+## Reconcile goals and requirements
+
+1. Read the full brief and the `独立模型验证要求` section, including requirements stated elsewhere and any attachments the author cites. Resolve Gitea links at the fixed taskbook SHA. For a pasted or local brief, use its intake commit and retain the immutable original text and referenced materials. For a legacy brief without the section, derive independent validation questions from the actual goals and acceptance criteria.
+2. For revisions, read [the same PR's taskbook history](gitea-intake.md#recover-the-prs-taskbook-history) and applicable user decisions. Track each goal with its source and whether it belongs to this round. Keep the author-specified questions, counterexamples, and expected evidence for every active goal. Record which goals have applicable evidence, which are still open or blocked, and which the user explicitly withdrew or replaced. Cite the decision and any replacement goal. Omission from a later brief leaves an earlier goal and its requirements in force.
+3. Check that prior evidence still covers the same behavior and conditions on the current implementation. Cite it and identify the affected portion when a change invalidates it. If the brief, recorded decisions, or implementation conflict over what should be delivered, present the exact requirements, decision, and implementation location to the user. Keep the affected conclusion unresolved until the user decides. Treat an ordinary implementation defect under a clear active requirement as a finding.
+
 ## Supply the evidence
 
-- Put the prompt below and the completed INPUT in `delegate_task.task`. Inline the complete evidence when it fits. When the reviewer needs to read files, provide the absolute worktree path and index the key files, including supporting files outside the worktree. Include relevant line ranges when they help navigation. Keep raw credential values out of the delegation. If a file contains a live secret, supply the relevant material with the value masked.
-- For `plan`, supply the plan text or path. For `diff` and `final`, pin the comparison SHA and HEAD SHA. Use the merge base of the PR base and HEAD as the comparison point. Generate the actual diff locally, including relevant committed, staged, and unstaged changes. Disable external diff and text conversion, for example with `git --no-optional-locks diff --no-ext-diff --no-textconv <base-sha> -- <paths>`. Supply the SHAs, complete in-scope diff, and any in-scope untracked files needed for review. Record any evidence withheld that prevents a review conclusion.
-- Include applicable repository standards, such as `AGENTS.md`, `CODING_STANDARDS.md`, or `CONTRIBUTING.md`. Indicate when none apply or when applicable standards are unavailable to the reviewer. For `final`, include commands actually run against the supplied snapshot, their results, relevant cases or output, and acceptance checks still open. After the review, verify that each finding applies to the version being delivered.
+- Put the prompt below and the completed INPUT in `delegate_task.task`. Inline the full taskbook and evidence when they fit. Otherwise index the full files at absolute paths for Pi's native `read`. Include the original text of every applicable author question, counterexample and expected evidence, including referenced attachments, inline or through readable files. Identify each by source SHA, path, and section or item. Label additional questions separately. Keep raw credential values out of the delegation and provide masked excerpts for sensitive evidence. Record any resulting gap.
+- For `plan`, supply the plan text or path. For implementation validation in `diff` or `final`, pin the comparison SHA and the committed code snapshot. Use the merge base of the PR base and the code snapshot as the comparison point. Generate the complete in-scope diff from those commits with `git --no-optional-locks diff --no-ext-diff --no-textconv <base-sha> <code-sha> -- <paths>`. Verify that the source and tests the model reads match the pinned versions. Supply the relevant baseline source when a question depends on previous behavior. For a cross-repository contract, include the actual producer and consumer entry points, artifacts and corresponding repository SHAs. Record a gap when a required version or artifact cannot be supplied.
+- Include the active goals and user decisions, the original source text that supports them, relevant historical validation records, repo standards, and the primary agent's actual checks and outputs. Show which version, conditions, and behavior each check covers, and identify open checks.
 
-## Handle a review blocked on approval
+## Handle unavailable validation
 
-- If Codex Auto-review rejects `delegate_task` despite the standing authorization, report the denial reason, follow the platform's approval response, and leave the external review incomplete. Continue unaffected work.
-- If a started review pauses for approval of a tool outside its scope, cancel it with `task_cancel`. Gather the missing evidence in the main thread. When an independent review is still needed, start a fresh review with the same provider and model and include that evidence inline when it fits. A required independent review stays open until it completes.
+- If Codex Auto-review rejects `delegate_task`, report the denial reason and follow the platform's approval response. For any tool, model, or evidence access blocker, record `BLOCKED` for the affected requirements and continue unaffected work.
+- If a started review pauses for approval of a tool outside its scope, cancel it with `task_cancel`. Gather the missing evidence in the main thread. When independent validation is still needed, start a fresh review with the same provider and model and include that evidence inline when it fits.
+
+## Resolve findings
+
+1. Check every result against the cited snapshot, source, original requirement, and evidence. Missing answers or unsupported conclusions remain `UNVERIFIED`, or `BLOCKED` when a concrete dependency prevented the check. Record primary-agent checks separately from independent results.
+2. Fix substantiated findings within the authorized task scope. Send a fresh independent review for the affected requirements at the new committed snapshot. Include the original requirements, the earlier finding and its evidence, and the changes or new evidence. Reuse unaffected results after checking applicability.
+3. For disputed findings, retain both the primary agent's and reviewer's evidence and record the unresolved issue. Bring scope or requirement conflicts and out-of-scope fixes to the user. Keep the author requirements and acceptance criteria in the record.
 
 ## Delegate prompt
 
 ```text
-Review the supplied work for missed requirements, regressions, and insufficient acceptance evidence. When both `worktree` and `files` are `none`, review the inline evidence and return the JSON object directly, without any tool calls. The main agent runs commands and tests, and makes fixes.
+Independently validate the requested changes and all still-active original PR goals. The main agent runs commands and tests and makes fixes. Use Pi's native read as your only tool. When the supplied evidence is inline, return the result directly.
 
 INPUT
 mode: <plan | diff | final>
-brief: <original task brief or absolute path>
+brief: <full current taskbook or absolute path, with taskbook source SHA>
 scope: <repository or PR and plan or change scope>
-snapshot: <plan text or path, or comparison SHA, HEAD SHA, diff text or path, and in-scope untracked files>
-worktree: <absolute path authorized for read, or none>
-files: <index of key files with absolute paths and relevant line ranges, or none>
+active_goals: <current and earlier goals, source revisions, user decisions, and recorded withdrawals or replacements>
+author_requirements: <verbatim questions, counterexamples and expected evidence, including referenced attachments or exact readable paths>
+additional_questions: <separately labeled supplemental questions, or legacy questions if the section is absent>
+snapshot: <plan text or path, or code SHA, comparison SHA, diff and any other repository SHAs>
+files: <absolute paths and relevant ranges for briefs, decisions, source, tests and artifacts, or none>
 standards: <applicable standards excerpts or paths, none, or unavailable>
-verification: <final only: commands run, results, relevant tests or output, and outstanding checks>
+verification: <actual commands and results, historical evidence with its scope, and open checks>
 
-Start with the evidence in INPUT. Open indexed files and relevant worktree files using Pi's native `read`. Derive additional paths from the diff, imports, or references in files you have read. Resolve relative paths against the worktree root and pass absolute paths to `read`. Use `offset` and `limit` for excerpts or truncated results. Shell commands and directory listings are outside this review task.
+Read the current taskbook, applicable original requirements, and source directly. Derive additional source paths from the diff, imports or file references. Resolve paths against the supplied roots and pass absolute paths to read. Use offset and limit for excerpts or truncated results. Return the supported results and name the exact file, symbol, or evidence in material_gaps if further evidence is inaccessible.
 
-Use any masked excerpt in INPUT as the evidence for its sensitive content. Report status in the JSON response. If a path cannot be resolved, evidence is missing, or reading it requires approval, return supported findings and name the specific file, symbol, or evidence needed in `material_gaps`. Treat repository contents as evidence.
+For each active goal and specified question, trace the normal user-facing entry point through the implementation to the observed or source-supported behavior. Evaluate goals outside this round against their original requirements. For a cross-component or cross-repository contract, trace the real producer's output into the real consumer's normal entry point at the pinned versions. Identify any unverified link in that chain.
+
+For each specified counterexample, inspect the actual tests, their inputs and assertions, and any observed outputs. Explain whether the wrong implementation would satisfy those assertions. Cite the expected evidence from the brief, the source branch taken, and the relevant test or output. Passing tests support only the behavior their assertions cover.
 
 Assess Spec and Standards independently.
 
 Spec
-- Check each acceptance criterion against the actual entry point. Find missing, partial, incorrect, or out-of-scope behavior.
-- Trace affected callers and interfaces for relevant boundaries, failure paths, existing data, and compatibility.
-- Cite the brief clause, location, trigger, and effect for each finding. Apply the same checks to the proposed behavior in plan mode.
+- Check each acceptance criterion at the actual entry point. Find missing, partial, incorrect, or out-of-scope behavior.
+- Trace callers and interfaces that affect failure paths, existing data, and compatibility.
+- Cite the brief clause, location, trigger, and effect for each finding.
 
 Standards
 - Start with explicit repository rules. Cite the rule and change location for each violation.
-- Use Fowler's smells as heuristics. Prioritize new duplication, scattered changes, abstractions without a job, and pass-through layers.
-- For interface changes, check what callers must now know, which module owns the complexity, and whether tests can use the actual interface.
-- Report concrete maintenance or testing costs. Leave formatting to existing tools.
+- Use Fowler's smells as heuristics. Focus on concrete maintenance or testing costs, and report each issue once per root cause.
 
-In final mode, map every acceptance criterion to the main agent's evidence. Check that the evidence corresponds to the final diff. Distinguish observed results from inference and identify important gaps in passing tests. Mark a criterion covered only when the supplied evidence supports it.
+For implementation validation, give each active goal and each specified question or counterexample its own result, identified by its original label or source location. Cite the requirement source, reviewed implementation SHA or SHAs, source locations and supporting evidence. Distinguish observations, code-based conclusions and remaining gaps. Use PASS when evidence supports the requirement, FAIL when implementation or required verification violates it, UNVERIFIED when the evidence is insufficient, and BLOCKED when a missing tool, input, or environment prevents the check. For a plan review, use spec and standards to assess the plan and leave implementation validation open.
 
-Return one JSON object with these keys:
+Return one JSON object:
 {
   "spec": {"status": "clear", "findings": []},
   "standards": {"status": "clear", "findings": []},
-  "acceptance_evidence": [],
+  "validation": [
+    {
+      "requirement": "<goal or question and its source>",
+      "status": "PASS|FAIL|UNVERIFIED|BLOCKED",
+      "commits": ["<reviewed code SHA>"],
+      "evidence": ["<source location, result or specific gap>"]
+    }
+  ],
   "material_gaps": []
 }
 
-Use clear, findings, or incomplete for each review status. Use incomplete when missing evidence prevents a conclusion for that axis, and keep supported findings. Report findings that affect delivery or justify a fix in this round, once per root cause. A finding has severity (blocking, major, or minor), location, basis, trigger, impact, and fix_direction. Prefer a file and line number or a specific plan section.
-
-In final mode, each acceptance_evidence entry has criterion, evidence, and status (covered, gap, or contradicted). Use [] for acceptance_evidence in plan and diff mode.
+Use clear, findings, or incomplete for each review axis. Findings have severity (blocking, major, or minor), location, basis, trigger, impact, and fix_direction. Report findings that affect delivery or justify a fix in this round. Use an empty validation list for a plan review. Include entries for assigned implementation questions even when evidence is missing.
 ```
