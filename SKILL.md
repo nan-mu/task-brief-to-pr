@@ -7,11 +7,11 @@ description: 按粘贴、文件或 Gitea 上的任务书在独立 Git worktree �
 
 Run this workflow when the user explicitly invokes the skill and asks you to implement a task brief. The invocation `task-brief-to-pr <gitea-owner>/<repo>:<ref>` is an implementation request with a [Gitea source](references/gitea-intake.md). Finish with a PR ready for the user to review.
 
-An explicit invocation authorizes the workflow for the selected task, including [Magpie access to the full review evidence](references/review-prompt.md#default-review-authorization) and PR delivery. Apply any limits the user gives for that run.
+An explicit invocation authorizes the workflow for the selected task, including [Codex Magpie access to the full review evidence](references/review-prompt.md#default-review-authorization) and PR delivery. Apply any limits the user gives for that run.
 
 ## Local Magpie routing
 
-On this machine, route Magpie calls exclusively through Codex's local `magpie` provider (`mcp__magpie__…`). Perform every Gitea read and write through its Gitea MCP tools (`mcp__magpie__gitea__…`). If a required local tool is unavailable, report the missing capability.
+On this machine, perform every Gitea read and write through Codex's local `magpie` Gitea MCP tools (`mcp__magpie__gitea__…`). If a required local MCP tool is unavailable, report the missing capability.
 
 The local GitHub MCP uses a GitHub App installation token. Use the GitHub owner and repository from the Git remote or current PR metadata and call the needed operation directly. Skip `get_me` for this token.
 
@@ -42,7 +42,7 @@ Before implementing, [extract and match existing experiment results](references/
 Before implementing, also [load or initialize the project glossary on its dedicated Gitea branch](references/gitea-glossary.md). Read any terminology source named in the brief. Use the project's established terms and the user's wording for undocumented concepts.
 
 1. Before coding, [reconcile the active goals and collect the author's verification requirements](references/review-prompt.md#reconcile-goals-and-requirements). Resolve routine implementation choices yourself. Present unresolved conflicts between taskbook revisions, user decisions, and the actual implementation when they require a decision about scope or behavior. Explain the evidence and effect on delivery. Append the question and answer under `澄清记录` in `taskbook.md`, preserving the original brief and earlier answers. Commit each update before resuming the affected work. Record any answers received before worktree setup immediately after the intake commit.
-2. Personally verify the open acceptance criteria using the agreed entry points and required repository checks. Reuse applicable evidence. Add a lasting test only for a specific regression the existing checks would miss. Inspect the diff and record the evidence, commands, and results. Commit the implementation to pin the snapshot for [independent validation](references/review-prompt.md#supply-the-evidence) within the existing review workflow. Address and recheck findings before recording acceptance.
+2. Personally verify the open acceptance criteria using the agreed entry points and required repository checks. Reuse applicable evidence. Add a lasting test only for a specific regression the existing checks would miss. Inspect the diff and record the evidence, commands, and results. Commit the implementation and run [independent validation](references/review-prompt.md#select-the-reviewer) against that snapshot. Address and recheck findings before recording acceptance.
 3. Commit the [validation and delivery evidence](references/pr-delivery.md#record-validation-evidence). Record the SHA containing the latest brief. Remove the imported paths in a separate commit and retain the audit results. Use the intake commit to recover the path list on resume. Compare the reviewed snapshot with the delivery head and revalidate affected requirements if code or other evidence inputs changed.
 
 ## 4. Publish the PR
